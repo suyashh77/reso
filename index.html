@@ -663,7 +663,7 @@ footer{border-top:1px solid var(--border);padding:40px 48px;display:flex;align-i
     <textarea class="wl-input" style="font-family:var(--sans);resize:none;min-height:80px;line-height:1.6" placeholder="Your thoughts, what you'd like to see, or how you'd use it (Optional)" id="wl-feedback" name="message"></textarea>
     <button class="wl-btn" type="submit" style="width:100%">Join interest list</button>
   </form>
-  <div class="wl-success" id="wl-success">You're on the list -- I'll reach out soon.</div>
+  <div class="wl-success" id="wl-success">Thank you for your response!</div>
 </section>
 
 <!-- FOOTER -->
@@ -822,7 +822,7 @@ async function submitWaitlist(e){
     if (response.ok) {
       document.getElementById('wl-form').style.display='none';
       document.getElementById('wl-success').style.display='flex';
-      showToast("You're on the list.");
+      showToast("Thank you for your response!");
     } else {
       showToast("Oops! There was a problem submitting your form");
       btn.textContent=orgText;
