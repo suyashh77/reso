@@ -658,9 +658,9 @@ footer{border-top:1px solid var(--border);padding:40px 48px;display:flex;align-i
   <h2 class="cta-h2">what would you <em>use this for?</em></h2>
   <p class="cta-sub">I'm building Reso and looking for thoughts. Drop your ideas, feedback, or what you'd like to see next.</p>
   <form id="wl-form" onsubmit="submitWaitlist(event)" style="display:flex;flex-direction:column;gap:12px;max-width:440px;margin:0 auto 14px;position:relative;text-align:left">
-    <input class="wl-input" type="text" placeholder="Your name" required id="wl-name">
-    <input class="wl-input" type="email" placeholder="your@email.com" required id="wl-email">
-    <textarea class="wl-input" style="font-family:var(--sans);resize:none;min-height:80px;line-height:1.6" placeholder="Your thoughts, what you'd like to see, or how you'd use it (Optional)" id="wl-feedback"></textarea>
+    <input class="wl-input" type="text" placeholder="Your name" required id="wl-name" name="name">
+    <input class="wl-input" type="email" placeholder="your@email.com" required id="wl-email" name="email">
+    <textarea class="wl-input" style="font-family:var(--sans);resize:none;min-height:80px;line-height:1.6" placeholder="Your thoughts, what you'd like to see, or how you'd use it (Optional)" id="wl-feedback" name="message"></textarea>
     <button class="wl-btn" type="submit" style="width:100%">Join interest list</button>
   </form>
   <div class="wl-success" id="wl-success">You're on the list -- I'll reach out soon.</div>
@@ -798,29 +798,41 @@ function saveNewCard(){const title=document.getElementById('m-title').value.trim
 
 const st=document.createElement('style');st.textContent='@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}';document.head.appendChild(st);
 
-let responses = [];
-function submitWaitlist(e){
+async function submitWaitlist(e){
   e.preventDefault();
-  const name=document.getElementById('wl-name').value.trim();
-  const email=document.getElementById('wl-email').value.trim();
-  const feedback=document.getElementById('wl-feedback').value.trim();
-  responses.push({name, email, feedback, date: new Date().toISOString()});
-  document.getElementById('wl-form').style.display='none';
-  document.getElementById('wl-success').style.display='flex';
-  showToast('You\'re on the list.');
-}
-function downloadCSV() {
-  if(responses.length === 0) { showToast('No responses yet.'); return; }
-  const headers = ['Date', 'Name', 'Email', 'Feedback'];
-  const rows = responses.map(r => [r.date, `"${r.name.replace(/"/g, '""')}"`, `"${r.email.replace(/"/g, '""')}"`, `"${r.feedback.replace(/"/g, '""')}"`]);
-  const csvContent = [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-  const link = document.createElement('a');
-  link.setAttribute('href', URL.createObjectURL(blob));
-  link.setAttribute('download', 'reso_waitlist.csv');
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+  const n=document.getElementById('wl-name').value.trim();
+  const em=document.getElementById('wl-email').value.trim();
+  const f=document.getElementById('wl-feedback').value.trim();
+  const btn=document.querySelector('.wl-btn');
+  const orgText=btn.textContent;
+  
+  btn.textContent='Sending...';
+  btn.disabled=true;
+  
+  try {
+    const response = await fetch("https://formspree.io/f/mgopjajd", {
+      method: "POST",
+      headers: {
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ name: n, email: em, message: f })
+    });
+    
+    if (response.ok) {
+      document.getElementById('wl-form').style.display='none';
+      document.getElementById('wl-success').style.display='flex';
+      showToast("You're on the list.");
+    } else {
+      showToast("Oops! There was a problem submitting your form");
+      btn.textContent=orgText;
+      btn.disabled=false;
+    }
+  } catch (error) {
+    showToast("Oops! There was a problem submitting your form");
+    btn.textContent=orgText;
+    btn.disabled=false;
+  }
 }
 
 let uploadedMediaURL=null;
